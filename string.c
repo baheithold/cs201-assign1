@@ -33,12 +33,12 @@ char *setSTRING(STRING *p, char *v) {
     return old;
 }
 
-int compareSTRING(STRING *str1, STRING *str2) {
+int compareSTRING(void *str1, void *str2) {
     assert(str1 != NULL && str2 != NULL);
     return strcmp(getSTRING(str1), getSTRING(str2));
 }
 
-int rcompareSTRING(STRING *str1, STRING *str2) {
+int rcompareSTRING(void *str1, void *str2) {
     assert(str1 != NULL && str2 != NULL);
     return strcmp(getSTRING(str2), getSTRING(str1));
 }

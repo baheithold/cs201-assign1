@@ -1,4 +1,5 @@
-OBJS = integer.o heap.o bst.o stack.o queue.o dll.o sll.o test-heap.o
+OBJS = integer.o real.o string.o heap.o bst.o stack.o queue.o dll.o sll.o \
+	   scanner.o heapsort.o
 OOPTS = -Wall -Wextra -std=c99 -g -c
 LOPTS = -Wall -Wextra -std=c99 -g
 
@@ -28,14 +29,17 @@ bst.o:	bst.c bst.h queue.h
 heap.o:	heap.c heap.h bst.h queue.h stack.h sll.h dll.h
 		gcc $(OOPTS) heap.c
 
+scanner.o:	scanner.c scanner.h
+		gcc $(OOPTS) scanner.c
+
 heapsort.o:	heapsort.c heap.h
 		gcc $(OOPTS) heapsort.c
 
 test:	heapsort
-		@./heapsort
+		@./heapsort ./Testing/hs-0-0.data
 
 valgrind: heapsort
-		valgrind ./heapsort
+		valgrind ./heapsort ./Testing/hs-0-0.data
 
 clean:
 		rm -f vgcore.* $(OBJS) heapsort

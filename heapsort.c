@@ -2,44 +2,114 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include "integer.h"
+#include "real.h"
+#include "string.h"
+#include "heap.h"
+#include "scanner.h"
 
 /* options */
-int Special = 0;    /* option -s      */
-int Number = 0;     /* option -n XXXX */
-char* Name = 0;     /* option -N YYYY */
+int vOption = 0;    /* option -v            */
+int iOption = 1;    /* option -i (default)  */
+int rOption = 0;    /* option -r            */
+int sOption = 0;    /* option -s            */
+int IOption = 1;    /* option -I (default)  */
+int DOption = 0;    /* option -D            */
+char *filename;
 
-static int processOptions(int,char **);
+static int processOptions(int, char **);
 void Fatal(char *,...);
+void printNameAndExplanation(void);
+void readIntegerFileToHeap(HEAP *h, FILE *fp);
+void readRealFileToHeap(HEAP *h, FILE *fp);
+void readStringFileToHeap(HEAP *h, FILE *fp);
+void displaySortedHeap(HEAP *h,
+                       void (*display)(void *, FILE *),
+                       void (*freeValue)(void *),
+                       FILE *fp);
 
-int
-main(int argc,char **argv)
-    {
+int main(int argc,char **argv) {
     int argIndex;
 
     if (argc == 1) Fatal("%d arguments!\n",argc-1);
 
     argIndex = processOptions(argc,argv);
 
-    printf("Special is %s\n", Special == 0? "false" : "true");
-    printf("Number is %d\n", Number);
-    printf("Name is %s\n", Name == 0? "missing" : Name);
-
-    if (argIndex == argc)
-        printf("No arguments\n");
-    else
-        {
-        int i;
-        printf("Remaining arguments:\n");
-        for (i = argIndex; i < argc; ++i)
-            printf("    %s\n",argv[i]);
-        }
-
-    return 0;
+    if (vOption) {
+        printNameAndExplanation();
+        return 0;
     }
 
-void
-Fatal(char *fmt, ...)
-    {
+    if (argIndex == argc) {
+        Fatal("Missing file name!\n");
+    }
+
+    // Open data file for reading
+    filename = argv[argIndex];
+    FILE *fp = fopen(filename, "r");
+    if (fp == 0) Fatal("Unable to open %s for reading!\n", filename);
+
+    HEAP *h;
+    if (rOption) {
+        // Sort reals
+        if (DOption) {
+            // Sort in decreasing order
+            h = newHEAP(displayREAL, rcompareREAL, freeREAL);
+            readRealFileToHeap(h, fp);
+            buildHEAP(h);
+            displaySortedHeap(h, displayREAL, freeREAL, stdout);
+            fprintf(stdout, "\n");
+        }
+        else {
+            // Sort in increasing order
+            h = newHEAP(displayREAL, compareREAL, freeREAL);
+            readRealFileToHeap(h, fp);
+            buildHEAP(h);
+            displaySortedHeap(h, displayREAL, freeREAL, stdout);
+            fprintf(stdout, "\n");
+        }
+    }
+    else if (sOption) {
+        // Sort strings
+        if (DOption) {
+            // Sort in decreasing order
+            h = newHEAP(displaySTRING, rcompareSTRING, freeSTRING);
+            readStringFileToHeap(h, fp);
+            buildHEAP(h);
+            displaySortedHeap(h, displaySTRING, freeSTRING, stdout);
+        }
+        else {
+            // Sort in increasing order
+            h = newHEAP(displaySTRING, compareSTRING, freeSTRING);
+            readStringFileToHeap(h, fp);
+            buildHEAP(h);
+            displaySortedHeap(h, displaySTRING, freeSTRING, stdout);
+        }
+    }
+    else {
+        // Sort integers
+        if (DOption) {
+            // Sort in decreasing order
+            h = newHEAP(displayINTEGER, rcompareINTEGER, freeINTEGER);
+            readIntegerFileToHeap(h, fp);
+            buildHEAP(h);
+            displaySortedHeap(h, displayINTEGER, freeINTEGER, stdout);
+        }
+        else {
+            // Sort in increasing order
+            h = newHEAP(displayINTEGER, compareINTEGER, freeINTEGER);
+            readIntegerFileToHeap(h, fp);
+            buildHEAP(h);
+            displaySortedHeap(h, displayINTEGER, freeINTEGER, stdout);
+        }
+    }
+
+    fclose(fp);
+    freeHEAP(h);
+    return 0;
+}
+
+void Fatal(char *fmt, ...) {
     va_list ap;
 
     fprintf(stderr,"An error occured: ");
@@ -48,50 +118,20 @@ Fatal(char *fmt, ...)
     va_end(ap);
 
     exit(-1);
-    }
+}
 
 /* only -oXXX  or -o XXX options */
 
-static int
-processOptions(int argc, char **argv)
-    {
-    int argIndex;
-    int argUsed;
-    int separateArg;
-    char *arg;
+static int processOptions(int argc, char **argv) {
+    int argIndex = 1;
 
-    argIndex = 1;
-
-    while (argIndex < argc && *argv[argIndex] == '-')
-        {
+    while (argIndex < argc && *argv[argIndex] == '-') {
         /* check if stdin, represented by "-" is an argument */
         /* if so, the end of options has been reached */
         if (argv[argIndex][1] == '\0') return argIndex;
 
-        separateArg = 0;
-        argUsed = 0;
-
-        if (argv[argIndex][2] == '\0')
-            {
-            arg = argv[argIndex+1];
-            separateArg = 1;
-            }
-        else
-            arg = argv[argIndex]+2;
-
-        switch (argv[argIndex][1])
-            {
+        switch (argv[argIndex][1]) {
             /*
-             * when option has an argument, do this
-             *
-             *     examples are -m4096 or -m 4096
-             *
-             *     case 'm':
-             *         MemorySize = atol(arg);
-             *         argUsed = 1;
-             *         break;
-             *
-             *
              * when option does not have an argument, do this
              *
              *     example is -a
@@ -101,26 +141,80 @@ processOptions(int argc, char **argv)
              *         break;
              */
 
-            case 'n':
-                Number = atoi(arg);
-                argUsed = 1;
+            case 'v':
+                vOption = 1;
+                break;
+            case 'i':
+                iOption = 1;
+                break;
+            case 'r':
+                rOption = 1;
                 break;
             case 's':
-                Special = 1;
+                sOption = 1;
                 break;
-            case 'N':
-                Name = strdup(arg);
-                argUsed = 1;
+            case 'I':
+                IOption = 1;
+                break;
+            case 'D':
+                DOption = 1;
                 break;
             default:
                 Fatal("option %s not understood\n",argv[argIndex]);
-            }
-
-        if (separateArg && argUsed)
-            ++argIndex;
-
-        ++argIndex;
         }
+        ++argIndex;
+    }
 
     return argIndex;
+}
+
+
+void printNameAndExplanation(void) {
+    printf("Written by Brett Heithold\n");
+    printf("Explanation to be written...\n");
+}
+
+
+void readIntegerFileToHeap(HEAP *h, FILE *fp) {
+    int integer = readInt(fp);
+    while (!feof(fp)) {
+        insertHEAP(h, newINTEGER(integer));
+        integer = readInt(fp);
     }
+}
+
+
+void readRealFileToHeap(HEAP *h, FILE *fp) {
+    double real = readReal(fp);
+    while (!feof(fp)) {
+        insertHEAP(h, newREAL(real));
+        real = readReal(fp);
+    }
+}
+
+
+void readStringFileToHeap(HEAP *h, FILE *fp) {
+    char *str;
+    if (stringPending(fp)) str = readString(fp);
+    else str = readToken(fp);
+    while (!feof(fp)) {
+        insertHEAP(h, newSTRING(str));
+        if (stringPending(fp)) str = readString(fp);
+        else str = readToken(fp);
+    }
+}
+
+
+void displaySortedHeap(HEAP *h,
+                       void (*display)(void *, FILE *),
+                       void (*freeValue)(void *),
+                       FILE *fp) {
+    void *extracted;
+    while (sizeHEAP(h) > 0) {
+        extracted = extractHEAP(h);
+        display(extracted, fp);
+        freeValue(extracted);
+        if (sizeHEAP(h) > 0) fprintf(fp, " ");
+    }
+    fprintf(fp, "\n");
+}

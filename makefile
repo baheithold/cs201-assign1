@@ -2,10 +2,10 @@ OBJS = integer.o heap.o bst.o stack.o queue.o dll.o sll.o test-heap.o
 OOPTS = -Wall -Wextra -std=c99 -g -c
 LOPTS = -Wall -Wextra -std=c99 -g
 
-all: test-heap
+all: heapsort
 
-test-heap:	$(OBJS)
-		gcc $(LOPTS) $(OBJS) -o test-heap
+heapsort:	$(OBJS)
+		gcc $(LOPTS) $(OBJS) -o heapsort
 
 integer.o:	integer.c integer.h
 		gcc $(OOPTS) integer.c
@@ -25,17 +25,17 @@ dll.o:	dll.c dll.h
 bst.o:	bst.c bst.h queue.h
 		gcc $(OOPTS) bst.c
 
-heap.o:	heap.c heap.h bst.h queue.h stack.h
+heap.o:	heap.c heap.h bst.h queue.h stack.h sll.h dll.h
 		gcc $(OOPTS) heap.c
 
-test-heap.o:	test-heap.c heap.h
-		gcc $(OOPTS) test-heap.c
+heapsort.o:	heapsort.c heap.h
+		gcc $(OOPTS) heapsort.c
 
-test:	test-heap
-		@./test-heap
+test:	heapsort
+		@./heapsort
 
-valgrind: test-heap
-		valgrind ./test-heap
+valgrind: heapsort
+		valgrind ./heapsort
 
 clean:
-		rm -f vgcore.* $(OBJS) test-heap
+		rm -f vgcore.* $(OBJS) heapsort

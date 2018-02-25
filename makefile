@@ -11,6 +11,12 @@ heapsort:	$(OBJS)
 integer.o:	integer.c integer.h
 		gcc $(OOPTS) integer.c
 
+real.o:	real.c real.h
+		gcc $(OOPTS) real.c
+
+string.o:	string.c string.h
+		gcc $(OOPTS) string.c
+
 queue.o:	queue.c queue.h sll.h
 		gcc $(OOPTS) queue.c
 
@@ -36,7 +42,32 @@ heapsort.o:	heapsort.c heap.h
 		gcc $(OOPTS) heapsort.c
 
 test:	heapsort
-		@./heapsort ./Testing/hs-0-0.data
+		@echo Testing heapsort -i -D hs-0-0.data...
+		@./heapsort -i -D ./Testing/hs-0-0.data > ./Testing/myresults/hs-0-0.txt
+		@diff ./Testing/expectedresults/hs-0-0.txt ./Testing/myresults/hs-0-0.txt
+		@echo Testing heapsort -r -D hs-0-1.data...
+		@./heapsort -r -D ./Testing/hs-0-1.data > ./Testing/myresults/hs-0-1.txt
+		@diff ./Testing/expectedresults/hs-0-1.txt ./Testing/myresults/hs-0-1.txt
+		@echo Testing heapsort -s -D hs-0-2.data...
+		@./heapsort -s -D ./Testing/hs-0-2.data > ./Testing/myresults/hs-0-2.txt
+		@diff ./Testing/expectedresults/hs-0-2.txt ./Testing/myresults/hs-0-2.txt
+		@echo Testing heapsort hs-0-3.data...
+		@./heapsort ./Testing/hs-0-3.data > ./Testing/myresults/hs-0-3.txt
+		@diff ./Testing/expectedresults/hs-0-3.txt ./Testing/myresults/hs-0-3.txt
+		@echo Testing heapsort hs-0-4.data...
+		@./heapsort ./Testing/hs-0-4.data > ./Testing/myresults/hs-0-4.txt
+		@diff ./Testing/expectedresults/hs-0-4.txt ./Testing/myresults/hs-0-4.txt
+		@echo Testing heapsort hs-0-5.data...
+		@./heapsort ./Testing/hs-0-5.data > ./Testing/myresults/hs-0-5.txt
+		@diff ./Testing/expectedresults/hs-0-5.txt ./Testing/myresults/hs-0-5.txt
+		@echo Testing heapsort hs-0-6.data...
+		@./heapsort ./Testing/hs-0-6.data > ./Testing/myresults/hs-0-6.txt
+		@diff ./Testing/expectedresults/hs-0-6.txt ./Testing/myresults/hs-0-6.txt
+		@echo Testing heapsort hs-0-7.data...
+		@./heapsort ./Testing/hs-0-7.data > ./Testing/myresults/hs-0-7.txt
+		@diff ./Testing/expectedresults/hs-0-7.txt ./Testing/myresults/hs-0-7.txt
+		@echo Testing heapsort -v...
+		@./heapsort -v
 
 valgrind: heapsort
 		valgrind ./heapsort ./Testing/hs-0-0.data

@@ -58,7 +58,6 @@ int main(int argc,char **argv) {
             readRealFileToHeap(h, fp);
             buildHEAP(h);
             displaySortedHeap(h, displayREAL, freeREAL, stdout);
-            fprintf(stdout, "\n");
         }
         else {
             // Sort in increasing order
@@ -66,7 +65,6 @@ int main(int argc,char **argv) {
             readRealFileToHeap(h, fp);
             buildHEAP(h);
             displaySortedHeap(h, displayREAL, freeREAL, stdout);
-            fprintf(stdout, "\n");
         }
     }
     else if (sOption) {
@@ -105,7 +103,6 @@ int main(int argc,char **argv) {
     }
 
     fclose(fp);
-    freeHEAP(h);
     return 0;
 }
 
@@ -210,11 +207,24 @@ void displaySortedHeap(HEAP *h,
                        void (*freeValue)(void *),
                        FILE *fp) {
     void *extracted;
-    while (sizeHEAP(h) > 0) {
-        extracted = extractHEAP(h);
-        display(extracted, fp);
-        freeValue(extracted);
-        if (sizeHEAP(h) > 0) fprintf(fp, " ");
+    if (sizeHEAP(h) > 200) {
+        int n = 0;
+        while (n < 200) {
+            extracted = extractHEAP(h);
+            display(extracted, fp);
+            freeValue(extracted);
+            n++;
+            if (n < 200) fprintf(fp, " ");
+        }
+        fprintf(fp, "\n");
     }
-    fprintf(fp, "\n");
+    else {
+        while (sizeHEAP(h) > 0) {
+            extracted = extractHEAP(h);
+            display(extracted, fp);
+            freeValue(extracted);
+            if (sizeHEAP(h) > 0) fprintf(fp, " ");
+        }
+        fprintf(fp, "\n");
+    }
 }

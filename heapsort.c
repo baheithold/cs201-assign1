@@ -168,7 +168,19 @@ static int processOptions(int argc, char **argv) {
 
 void printNameAndExplanation(void) {
     printf("Written by Brett Heithold\n");
-    printf("Explanation to be written...\n");
+    printf("The heapsort algorithm runs in nlogn time. Inserting a value into"
+            "the heap takes constant time. Constant time insertion is accomplished"
+            "by using a queue and stack to keep track of values as they are"
+            "inserted. Every new item added into the unordered heap is inserted"
+            "at the leftmost open spot in the bottom level of the heap. Building"
+            "the heap takes linear time. Build heap accomplishes linear time"
+            "by visiting each of the leaf nodes and running heapify on their parent"
+            "nodes, then their grandparents nodes, continuing until the root"
+            "node is reached. The extract heap operation takes logn time. The" 
+            "logarithmic run time of extract heap is accomplished by first"
+            "swapping the root's value with the rightmost value on the bottom"
+            "level of the heap. Then extract heap prunes the leaf node and"
+            "heapifies the root node of the tree.\n");
 }
 
 

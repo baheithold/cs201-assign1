@@ -176,7 +176,7 @@ void printNameAndExplanation(void) {
             "the heap takes linear time. Build heap accomplishes linear time"
             "by visiting each of the leaf nodes and running heapify on their parent"
             "nodes, then their grandparents nodes, continuing until the root"
-            "node is reached. The extract heap operation takes logn time. The" 
+            "node is reached. The extract heap operation takes logn time. The"
             "logarithmic run time of extract heap is accomplished by first"
             "swapping the root's value with the rightmost value on the bottom"
             "level of the heap. Then extract heap prunes the leaf node and"

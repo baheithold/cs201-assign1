@@ -41,7 +41,7 @@ scanner.o:	scanner.c scanner.h
 heapsort.o:	heapsort.c heap.h
 		gcc $(OOPTS) heapsort.c
 
-test:	heapsort
+test-all:	heapsort
 		@echo Testing heapsort -i -D hs-1-0.data...
 		@./heapsort -i -D ./Testing/hs-1-0.data > ./Testing/myresults/hs-1-0.txt
 		@diff ./Testing/expectedresults/hs-1-0.txt ./Testing/myresults/hs-1-0.txt
@@ -66,8 +66,22 @@ test:	heapsort
 		@echo Testing heapsort hs-1-7.data...
 		@./heapsort ./Testing/hs-1-7.data > ./Testing/myresults/hs-1-7.txt
 		@diff ./Testing/expectedresults/hs-1-7.txt ./Testing/myresults/hs-1-7.txt
-		@echo Testing heapsort -v...
+		@echo Testing -v option...
 		@./heapsort -v
+
+test:	heapsort
+		@echo Testing heapsort -i -D hs-1-0.data...
+		@./heapsort -i -D ./Testing/hs-1-0.data > ./Testing/myresults/hs-1-0.txt
+		@diff ./Testing/expectedresults/hs-1-0.txt ./Testing/myresults/hs-1-0.txt
+		@echo Testing heapsort -r -D hs-1-1.data...
+		@./heapsort -r -D ./Testing/hs-1-1.data > ./Testing/myresults/hs-1-1.txt
+		@diff ./Testing/expectedresults/hs-1-1.txt ./Testing/myresults/hs-1-1.txt
+		@echo Testing heapsort -s -D hs-1-2.data...
+		@./heapsort -s -D ./Testing/hs-1-2.data > ./Testing/myresults/hs-1-2.txt
+		@diff ./Testing/expectedresults/hs-1-2.txt ./Testing/myresults/hs-1-2.txt
+		@echo Testing heapsort hs-1-3.data...
+		@./heapsort ./Testing/hs-1-3.data > ./Testing/myresults/hs-1-3.txt
+		@diff ./Testing/expectedresults/hs-1-3.txt ./Testing/myresults/hs-1-3.txt
 
 valgrind: heapsort
 		valgrind ./heapsort ./Testing/hs-0-0.data

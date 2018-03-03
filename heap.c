@@ -236,7 +236,6 @@ void freeHEAP(HEAP *h) {
 
 int isRoot(HEAP *h, BSTNODE *n) {
     return (n == getBSTroot(h->tree)) ? 1 : 0;
-    //return (getBSTNODEparent(n) == NULL) ? 1 : 0;
 }
 
 

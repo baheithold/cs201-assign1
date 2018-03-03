@@ -142,7 +142,6 @@ void setBSTNODEparent(BSTNODE *n, BSTNODE *replacement) {
  *  free its generic value before freeing the node itself.
  */
 void freeBSTNODE(BSTNODE *n, void (*freeValue)(void *)) {
-    // TODO: Do I work correctly?
     assert(n != 0);
     if (freeValue != NULL) {
         freeValue(n->value);
@@ -188,7 +187,7 @@ static void freeTree(BST *t, BSTNODE *n);
 struct BST {
     BSTNODE *root;
     int size;
-    
+
     // Public Methods
     void (*display)(void *, FILE *);
     int (*compare)(void *, void *);
@@ -259,7 +258,7 @@ BSTNODE *getBSTroot(BST *t) {
 /*
  *  Method: setBSTroot
  *  Usage:  setBSTroot(t, replacement);
- *  Description: This method updates the root pointer of a BST object. This 
+ *  Description: This method updates the root pointer of a BST object. This
  *  method runs in constant time.
  */
 void setBSTroot(BST *t, BSTNODE *replacement) {
@@ -353,6 +352,7 @@ BSTNODE *deleteBST(BST *t, void *v) {
     if (n == NULL) return NULL;
     n = swapToLeafBST(t, n);
     pruneLeafBST(t, n);
+    t->size--;
     return n;
 }
 
@@ -387,27 +387,18 @@ BSTNODE *swapToLeafBST(BST *t, BSTNODE *n) {
  *  Description:
  */
 void pruneLeafBST(BST *t, BSTNODE *leaf) {
-    // TODO: Am I correct?
     assert(t != 0);
-    if (t->isLeftChild(t, leaf)) {
-        if (t->isRoot(t, leaf)) {
-            setBSTroot(t, NULL);
-            t->size--;
-            return;
-        }
+    if (t->size == 1) {
+        setBSTroot(t, NULL);
+    }
+    else if (t->isLeftChild(t, leaf)) {
         setBSTNODEleft(getBSTNODEparent(leaf), NULL);
         setBSTNODEparent(leaf, NULL);
     }
     else {
-        if (t->isRoot(t, leaf)) {
-            setBSTroot(t, NULL);
-            t->size--;
-            return;
-        }
         setBSTNODEright(getBSTNODEparent(leaf), NULL);
         setBSTNODEparent(leaf, NULL);
     }
-    t->size--;
 }
 
 
@@ -427,9 +418,9 @@ int sizeBST(BST *t) {
  *  Usage:  statisticsBST(t, stdout);
  *  Description: This method displays the number of nodes in the tree as well
  *  as the minimum and maximum heights of the tree. The minimum depth of a tree
- *  is the minimum number of steps from the root to a node with a NULL child. 
- *  The maximum depth of a tree is the maximum number of steps from the root 
- *  to a node with a NULL child. The depths of an empty tree are -1. 
+ *  is the minimum number of steps from the root to a node with a NULL child.
+ *  The maximum depth of a tree is the maximum number of steps from the root
+ *  to a node with a NULL child. The depths of an empty tree are -1.
  *  This method runs in linear time.
  *  Example Output:
  *                  Nodes: 8
@@ -505,7 +496,7 @@ void displayBSTdebug(BST *t, FILE *fp) {
  *  Usage:  freeBST(tree);
  *  Description: This method frees a BST object by performing a postorder
  *  traversal of the tree freeing the BSTNODE objects. After freeing all of the
- *  BSTNODEs, the tree object itself is freed. This method makes use of a 
+ *  BSTNODEs, the tree object itself is freed. This method makes use of a
  *  recursive helper function.
  */
 void freeBST(BST *t) {

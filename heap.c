@@ -14,8 +14,9 @@
 
 
 // Private HEAP method prototypes
+static int isRoot(BSTNODE *n);
 static void swapNodeValues(BSTNODE *x, BSTNODE *y);
-static void heapify(HEAP *h, BSTNODE *root);
+static void heapify(HEAP *h, BSTNODE *n);
 
 
 struct HEAP {
@@ -24,12 +25,13 @@ struct HEAP {
 
     QUEUE *insertionQueue;
     STACK *extractionStack;
-    
+
     // Public Methods
     void (*display)(void *, FILE *);
     int (*compare)(void *, void *);
     void (*free)(void *);
     // Private Methods
+    int (*isRoot)(BSTNODE *);
     void (*swapNodeValues)(BSTNODE *, BSTNODE *);
     void (*heapify)(HEAP *, BSTNODE *);
 };
@@ -48,11 +50,12 @@ HEAP *newHEAP(
     assert(h != 0);
     h->tree = newBST(d, c, NULL, f);
     h->size = 0;
-    h->insertionQueue = newQUEUE(h->display, h->free);
-    h->extractionStack = newSTACK(h->display, h->free);
+    h->insertionQueue = newQUEUE(d, NULL);
+    h->extractionStack = newSTACK(d, NULL);
     h->display = d;
     h->compare = c;
     h->free = f;
+    h->isRoot = isRoot;
     h->swapNodeValues = swapNodeValues;
     h->heapify = heapify;
     return h;
@@ -63,7 +66,7 @@ HEAP *newHEAP(
  *  Method: insertHEAP
  *  Usage:  insertHEAP(h, newINTEGER(7));
  *  Description: This method inserts a generic value into an un-heapified heap.
- *  No fixing up of the heap should occur. This method runs in constant time. 
+ *  No fixing up of the heap should occur. This method runs in constant time.
  */
 void insertHEAP(HEAP *h, void *value) {
     assert(h != 0);
@@ -106,13 +109,27 @@ void insertHEAP(HEAP *h, void *value) {
  *  Once buildHEAP has been called, no insertions to the heap should be made.
  *  This method runs in linear time.
  */
+/*
 void buildHEAP(HEAP *h) {
     assert(h != 0);
-    int numLeaves = sizeQUEUE(h->insertionQueue);
-    int i = 0;
     BSTNODE *dequeued;
     BSTNODE *parent;
-    while (i < numLeaves) {
+    while (sizeQUEUE(h->insertionQueue) > 0) {
+        dequeued = dequeue(h->insertionQueue);
+        parent = getBSTNODEparent(dequeued);
+        while (!h->isRoot(parent)) {
+            h->heapify(h, parent);
+            parent = getBSTNODEparent(parent);
+        }
+        push(h->extractionStack, dequeued);
+    }
+}
+*/
+void buildHEAP(HEAP *h) {
+    assert(h != 0);
+    BSTNODE *dequeued;
+    BSTNODE *parent;
+    while (sizeQUEUE(h->insertionQueue) > 0) {
         dequeued = dequeue(h->insertionQueue);
         parent = getBSTNODEparent(dequeued);
         while (parent != NULL) {
@@ -120,15 +137,15 @@ void buildHEAP(HEAP *h) {
             parent = getBSTNODEparent(parent);
         }
         push(h->extractionStack, dequeued);
-        i++;
     }
 }
+
 
 /*
  *  Method: peekHEAP
  *  Usage:  void *val = peekHEAP(h);
  *  Description:This method returns the value at the “root” of the heap;
- *  the heap is unmodified. This method runs in constant time. 
+ *  the heap is unmodified. This method runs in constant time.
  */
 void *peekHEAP(HEAP *h) {
     assert(h != 0);
@@ -140,24 +157,19 @@ void *peekHEAP(HEAP *h) {
  *  Method: extractHEAP
  *  Usage:  void *val = extractHEAP(h);
  *  Description: This method returns the value at the “root” of the heap,
- *  rebuilding the heap. This method runs in logarithmic time. 
+ *  rebuilding the heap. This method runs in logarithmic time.
  */
 void *extractHEAP(HEAP *h) {
     assert(h != 0);
-    if (h->size == 1) {
-        h->size--;
-        BSTNODE *popped = pop(h->extractionStack);
-        void *rv = getBSTNODEvalue(popped);
-        freeBSTNODE(popped, NULL);
-        return rv;
-    }
+    void *rv = getBSTNODEvalue(getBSTroot(h->tree));
     BSTNODE *popped = pop(h->extractionStack);
-    h->swapNodeValues(getBSTroot(h->tree), popped);
-    void *rv = getBSTNODEvalue(popped);
+    if (h->size > 1) {
+        setBSTNODEvalue(getBSTroot(h->tree), getBSTNODEvalue(popped));
+        h->heapify(h, getBSTroot(h->tree));
+    }
     pruneLeafBST(h->tree, popped);
     h->size--;
-    if (h->size > 1) h->heapify(h, getBSTroot(h->tree));
-    freeBSTNODE(popped, NULL);
+    setBSTsize(h->tree, h->size);
     return rv;
 }
 
@@ -166,7 +178,7 @@ void *extractHEAP(HEAP *h) {
  *  Method: sizeHEAP
  *  Usage:  int size = sizeHEAP(h);
  *  Description: This method returns the number of values currently in the tree.
- *  It runs in constant time. 
+ *  It runs in constant time.
  */
 int sizeHEAP(HEAP *h) {
     assert(h != 0);
@@ -192,7 +204,7 @@ void displayHEAP(HEAP *h, FILE *fp) {
  *  Usage:  displayHEAPdebug(h, stdout);
  *  Description: This method should print the size of the heap, the size of the
  *  underlying data structure, and call the debug display method of the
- *  underlying data structure. 
+ *  underlying data structure.
  *  Example Output:
  */
 void displayHEAPdebug(HEAP *h, FILE *fp) {
@@ -200,6 +212,7 @@ void displayHEAPdebug(HEAP *h, FILE *fp) {
     fprintf(fp, "heap size: %d\n", h->size);
     fprintf(fp, "bst size: %d\n", sizeBST(h->tree));
     displayBSTdebug(h->tree, fp);
+    printf("size stack: %d\n", sizeSTACK(h->extractionStack));
 }
 
 
@@ -220,6 +233,11 @@ void freeHEAP(HEAP *h) {
 /****************************** Private Methods ******************************/
 
 
+int isRoot(BSTNODE *n) {
+    return (getBSTNODEparent(n) == NULL) ? 1 : 0;
+}
+
+
 void swapNodeValues(BSTNODE *x, BSTNODE *y) {
     assert(x != 0 && y != 0);
     void *tmp = getBSTNODEvalue(x);
@@ -228,12 +246,12 @@ void swapNodeValues(BSTNODE *x, BSTNODE *y) {
 }
 
 
-void heapify(HEAP *h, BSTNODE *root) {
-    BSTNODE *left = getBSTNODEleft(root);
-    BSTNODE *right = getBSTNODEright(root);
-    BSTNODE *smallest = root;
+void heapify(HEAP *h, BSTNODE *n) {
+    BSTNODE *left = getBSTNODEleft(n);
+    BSTNODE *right = getBSTNODEright(n);
+    BSTNODE *smallest = n;
     if (left != NULL) {
-        if (h->compare(getBSTNODEvalue(left), getBSTNODEvalue(root)) < 0) {
+        if (h->compare(getBSTNODEvalue(left), getBSTNODEvalue(n)) < 0) {
             smallest = left;
         }
     }
@@ -242,8 +260,8 @@ void heapify(HEAP *h, BSTNODE *root) {
             smallest = right;
         }
     }
-    if (h->compare(getBSTNODEvalue(smallest), getBSTNODEvalue(root)) != 0) {
-        h->swapNodeValues(root, smallest);
+    if (h->compare(getBSTNODEvalue(smallest), getBSTNODEvalue(n)) != 0) {
+        h->swapNodeValues(n, smallest);
         h->heapify(h, smallest);
     }
 }

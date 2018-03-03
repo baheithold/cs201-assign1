@@ -219,24 +219,11 @@ void displaySortedHeap(HEAP *h,
                        void (*freeValue)(void *),
                        FILE *fp) {
     void *extracted;
-    if (sizeHEAP(h) > 200) {
-        int n = 0;
-        while (n < 200) {
-            extracted = extractHEAP(h);
-            display(extracted, fp);
-            freeValue(extracted);
-            n++;
-            if (n < 200) fprintf(fp, " ");
-        }
-        fprintf(fp, "\n");
+    while (sizeHEAP(h) > 0) {
+        extracted = extractHEAP(h);
+        display(extracted, fp);
+        //freeValue(extracted);
+        if (sizeHEAP(h) > 0) fprintf(fp, " ");
     }
-    else {
-        while (sizeHEAP(h) > 0) {
-            extracted = extractHEAP(h);
-            display(extracted, fp);
-            freeValue(extracted);
-            if (sizeHEAP(h) > 0) fprintf(fp, " ");
-        }
-        fprintf(fp, "\n");
-    }
+    fprintf(fp, "\n");
 }

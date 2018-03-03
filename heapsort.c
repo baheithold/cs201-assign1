@@ -222,7 +222,7 @@ void displaySortedHeap(HEAP *h,
     while (sizeHEAP(h) > 0) {
         extracted = extractHEAP(h);
         display(extracted, fp);
-        //freeValue(extracted);
+        freeValue(extracted);
         if (sizeHEAP(h) > 0) fprintf(fp, " ");
     }
     fprintf(fp, "\n");

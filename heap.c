@@ -14,7 +14,7 @@
 
 
 // Private HEAP method prototypes
-static int isRoot(BSTNODE *n);
+static int isRoot(HEAP *h, BSTNODE *n);
 static void swapNodeValues(BSTNODE *x, BSTNODE *y);
 static void heapify(HEAP *h, BSTNODE *n);
 
@@ -31,7 +31,7 @@ struct HEAP {
     int (*compare)(void *, void *);
     void (*free)(void *);
     // Private Methods
-    int (*isRoot)(BSTNODE *);
+    int (*isRoot)(HEAP *h, BSTNODE *);
     void (*swapNodeValues)(BSTNODE *, BSTNODE *);
     void (*heapify)(HEAP *, BSTNODE *);
 };
@@ -134,6 +134,7 @@ void buildHEAP(HEAP *h) {
         parent = getBSTNODEparent(dequeued);
         while (parent != NULL) {
             h->heapify(h, parent);
+            if (h->isRoot(h, parent)) break;
             parent = getBSTNODEparent(parent);
         }
         push(h->extractionStack, dequeued);
@@ -233,8 +234,9 @@ void freeHEAP(HEAP *h) {
 /****************************** Private Methods ******************************/
 
 
-int isRoot(BSTNODE *n) {
-    return (getBSTNODEparent(n) == NULL) ? 1 : 0;
+int isRoot(HEAP *h, BSTNODE *n) {
+    return (n == getBSTroot(h->tree)) ? 1 : 0;
+    //return (getBSTNODEparent(n) == NULL) ? 1 : 0;
 }
 
 

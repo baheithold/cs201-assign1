@@ -109,22 +109,6 @@ void insertHEAP(HEAP *h, void *value) {
  *  Once buildHEAP has been called, no insertions to the heap should be made.
  *  This method runs in linear time.
  */
-/*
-void buildHEAP(HEAP *h) {
-    assert(h != 0);
-    BSTNODE *dequeued;
-    BSTNODE *parent;
-    while (sizeQUEUE(h->insertionQueue) > 0) {
-        dequeued = dequeue(h->insertionQueue);
-        parent = getBSTNODEparent(dequeued);
-        while (!h->isRoot(parent)) {
-            h->heapify(h, parent);
-            parent = getBSTNODEparent(parent);
-        }
-        push(h->extractionStack, dequeued);
-    }
-}
-*/
 void buildHEAP(HEAP *h) {
     assert(h != 0);
     BSTNODE *dequeued;
@@ -164,11 +148,12 @@ void *extractHEAP(HEAP *h) {
     assert(h != 0);
     void *rv = getBSTNODEvalue(getBSTroot(h->tree));
     BSTNODE *popped = pop(h->extractionStack);
+    pruneLeafBST(h->tree, popped);
     if (h->size > 1) {
         setBSTNODEvalue(getBSTroot(h->tree), getBSTNODEvalue(popped));
         h->heapify(h, getBSTroot(h->tree));
     }
-    pruneLeafBST(h->tree, popped);
+    freeBSTNODE(popped, NULL);
     h->size--;
     setBSTsize(h->tree, h->size);
     return rv;

@@ -500,7 +500,7 @@ void displayBSTdebug(BST *t, FILE *fp) {
  *  recursive helper function.
  */
 void freeBST(BST *t) {
-    t->freeTree(t, t->root);
+    if (t->size > 0) t->freeTree(t, t->root);
     free(t);
 }
 

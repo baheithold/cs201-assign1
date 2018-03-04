@@ -103,6 +103,7 @@ int main(int argc,char **argv) {
     }
 
     fclose(fp);
+    freeHEAP(h);
     return 0;
 }
 
